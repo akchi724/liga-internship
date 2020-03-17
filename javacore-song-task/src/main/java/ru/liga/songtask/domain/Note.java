@@ -9,10 +9,10 @@ import com.leff.midi.event.NoteOn;
  */
 public class Note {
     private final NoteSign note;
-    private final Long durationTicks;
-    private final Long startTick;
+    private final long durationTicks;
+    private final long startTick;
 
-    public Note(NoteSign note, Long startTick, Long durationTicks) {
+    public Note(NoteSign note, long startTick, long durationTicks) {
         this.note = note;
         this.startTick = startTick;
         this.durationTicks = durationTicks;
@@ -32,6 +32,10 @@ public class Note {
 
     public Long endTickInclusive() {
         return startTick + durationTicks;
+    }
+
+    public NoteSign getNote() {
+        return note;
     }
 
     @Override

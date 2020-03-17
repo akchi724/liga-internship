@@ -18,6 +18,8 @@ import java.util.Queue;
 import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static ru.liga.ReaderSettings.*;
+
 public class App {
 
     /**
@@ -27,14 +29,14 @@ public class App {
      * Tempo может быть только один
      */
     public static void main(String[] args) throws IOException {
-        MidiFile midiFile = new MidiFile(new FileInputStream("C:\\Users\\Xiaomi\\IdeaProjects\\liga-internship\\javacore-song-task\\src\\main\\resources\\Wrecking Ball.mid"));
-        List<Note> notes = eventsToNotes(midiFile.getTracks().get(3).getEvents());
-        Tempo last = (Tempo) midiFile.getTracks().get(0).getEvents().last();
-        Note ninthNote = notes.get(8);
-        System.out.println("Длительность девятой ноты (" + ninthNote.sign().fullName() + "): " + SongUtils.tickToMs(last.getBpm(), midiFile.getResolution(), ninthNote.durationTicks()) + "мс");
-        System.out.println("Все ноты:");
-        System.out.println(notes);
+
+        if (args.length > 1) {
+            argsReader(args);
+        } else {
+            invalidRequest();
+        }
     }
+
 
     /**
      * Этот метод, чтобы вы не афигели переводить эвенты в ноты
@@ -42,6 +44,10 @@ public class App {
      * @param events эвенты одного трека
      * @return список нот
      */
+
+
+
+
     public static List<Note> eventsToNotes(TreeSet<MidiEvent> events) {
         List<Note> vbNotes = new ArrayList<>();
 

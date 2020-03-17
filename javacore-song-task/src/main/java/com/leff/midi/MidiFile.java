@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import com.leff.midi.util.MidiUtil;
 
 public class MidiFile
@@ -207,4 +208,6 @@ public class MidiFile
         mTrackCount = MidiUtil.bytesToInt(buffer, 10, 2);
         mResolution = MidiUtil.bytesToInt(buffer, 12, 2);
     }
+
+
 }
