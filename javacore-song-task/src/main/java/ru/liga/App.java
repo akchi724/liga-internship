@@ -1,16 +1,12 @@
 package ru.liga;
 
 
-import com.leff.midi.MidiFile;
 import com.leff.midi.event.MidiEvent;
 import com.leff.midi.event.NoteOff;
 import com.leff.midi.event.NoteOn;
-import com.leff.midi.event.meta.Tempo;
 import ru.liga.songtask.domain.Note;
 import ru.liga.songtask.domain.NoteSign;
-import ru.liga.songtask.util.SongUtils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +27,7 @@ public class App {
     public static void main(String[] args) throws IOException {
 
         if (args.length > 1) {
-            argsReader(args);
+            runCommandExecutionFromConsole(args);
         } else {
             invalidRequest();
         }
@@ -44,8 +40,6 @@ public class App {
      * @param events эвенты одного трека
      * @return список нот
      */
-
-
 
 
     public static List<Note> eventsToNotes(TreeSet<MidiEvent> events) {

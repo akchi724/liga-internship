@@ -16,36 +16,38 @@ import static ru.liga.ReaderSettings.getMidiFile;
 
 public class ChangeFile {
     Logger log = LoggerFactory.getLogger(ChangeFile.class);
+
     public MidiFile getChangedMidi(String midiPath, int trans, float tempo) throws IOException {
-        log.trace("Изменение скорости midi-Файла на "+tempo+"% и изменение тона на "+trans);
+        log.trace("Изменение скорости midi-Файла на " + tempo + "% и изменение тона на " + trans);
         MidiFile midiFile = getMidiFile(midiPath);
         float percentTempo = 1.0F + tempo / 100.0F;
-        MidiFile modifiedMidiFile =changeTempoOfMidiFile(midiFile,percentTempo);
-        modifiedMidiFile= transposeMidi(modifiedMidiFile,trans);
+        MidiFile modifiedMidiFile = changeTempoOfMidiFile(midiFile, percentTempo);
+        modifiedMidiFile = transposeMidi(modifiedMidiFile, trans);
         return modifiedMidiFile;
     }
 
-    MidiFile transposeMidi(MidiFile midiFile, int trans) {
+    private MidiFile transposeMidi(MidiFile midiFile, int trans) {
         log.trace("Изменение тона");
         MidiFile midiFile1 = new MidiFile();
-        for(MidiTrack midiTrack:midiFile.getTracks()){
-            midiFile1.addTrack(transposeMidiTrack(trans,midiTrack));
+        for (MidiTrack midiTrack : midiFile.getTracks()) {
+            midiFile1.addTrack(transposeMidiTrack(trans, midiTrack));
         }
         return midiFile1;
     }
+
     private static MidiTrack transposeMidiTrack(int trans, MidiTrack midiTrack) {
         MidiTrack midiTrack1 = new MidiTrack();
-         for(MidiEvent event:midiTrack.getEvents()){
-             if(event.getClass().equals(NoteOn.class)){
-                 NoteOn on = getChangedNoteOn(trans,(NoteOn)event);
-                 midiTrack1.getEvents().add(on);
-             } else if(event.getClass().equals(NoteOff.class)){
-                 NoteOff off = getChangedNoteOff(trans,(NoteOff)event);
-                 midiTrack1.getEvents().add(off);
-             } else {
-                 midiTrack1.getEvents().add(event);
-             }
-         }
+        for (MidiEvent event : midiTrack.getEvents()) {
+            if (event.getClass().equals(NoteOn.class)) {
+                NoteOn on = getChangedNoteOn(trans, (NoteOn) event);
+                midiTrack1.getEvents().add(on);
+            } else if (event.getClass().equals(NoteOff.class)) {
+                NoteOff off = getChangedNoteOff(trans, (NoteOff) event);
+                midiTrack1.getEvents().add(off);
+            } else {
+                midiTrack1.getEvents().add(event);
+            }
+        }
         return midiTrack1;
     }
 
@@ -58,6 +60,7 @@ public class ChangeFile {
             throw new RuntimeException();
         }
     }
+
     private static NoteOff getChangedNoteOff(int trans, NoteOff midiEvent) {
         NoteOff off = new NoteOff(midiEvent.getTick(), midiEvent.getDelta(), midiEvent.getChannel(), midiEvent.getNoteValue(), midiEvent.getVelocity());
         if (off.getNoteValue() + trans <= 107 && off.getNoteValue() + trans >= 21) {
@@ -71,17 +74,17 @@ public class ChangeFile {
     public MidiFile changeTempoOfMidiFile(MidiFile midiFile, float percentTempo) {
         log.trace("Изменение скорости");
         MidiFile mf = new MidiFile();
-        for (MidiTrack track:midiFile.getTracks()){
-            mf.addTrack(changeTempoOfMidiTrack(percentTempo,track));
+        for (MidiTrack track : midiFile.getTracks()) {
+            mf.addTrack(changeTempoOfMidiTrack(percentTempo, track));
         }
         return mf;
     }
 
     private static MidiTrack changeTempoOfMidiTrack(float percentTempo, MidiTrack midiTrack) {
         MidiTrack midiTrack1 = new MidiTrack();
-        for (MidiEvent event:midiTrack.getEvents()){
-            if(event.getClass().equals(Tempo.class)){
-                Tempo tempo = getChangedTempo(percentTempo,(Tempo)event);
+        for (MidiEvent event : midiTrack.getEvents()) {
+            if (event.getClass().equals(Tempo.class)) {
+                Tempo tempo = getChangedTempo(percentTempo, (Tempo) event);
                 midiTrack1.getEvents().add(tempo);
             } else
                 midiTrack1.getEvents().add(event);

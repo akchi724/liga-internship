@@ -20,26 +20,25 @@ public class Analysis {
     Logger log = LoggerFactory.getLogger(Analysis.class);
 
 
-
     public boolean isVoice(List<Note> track) {
         log.trace("Проверка дорожки на пригодность для исполнения голосом");
         List<Note> vNotes = new ArrayList<>();
         Note exNote = null;
         if (track.size() == 0) return false;
         for (Note note : track) {
-            if (exNote!=null) {
+            if (exNote != null) {
                 if (rangesIntersect(exNote.startTick(), exNote.durationTicks(), note.startTick())) {
                     log.trace("Дорожка не пригодна для исполнения голосом");
                     return false;
                 }
             }
-            exNote=note;
+            exNote = note;
         }
         log.trace("Дорожка пригодна для исполнения голосом");
         return true;
     }
 
-    List<List<Note>> getAllTracksAsNotes(MidiFile midiFile) {
+    public List<List<Note>> getAllTracksAsNotes(MidiFile midiFile) {
         log.trace("Получение всех дорожек");
         List<List<Note>> listNote = new ArrayList<>();
         for (int i = 0; i < midiFile.getTracks().size(); i++) {
@@ -48,12 +47,12 @@ public class Analysis {
         return listNote;
     }
 
-    List<List<Note>> getVoiceTracksAsNotes(MidiFile midiFile) {
+    private List<List<Note>> getVoiceTracksAsNotes(MidiFile midiFile) {
         log.trace("Получение всех потенциальных голосовых дорожек Midi-файла");
         return getAllTracksAsNotes(midiFile).stream().filter(this::isVoice).collect(Collectors.toList());
     }
 
-    boolean rangesIntersect(long firststart, long firstduration, long secondstart) {
+    public boolean rangesIntersect(long firststart, long firstduration, long secondstart) {
         return secondstart < (firststart + firstduration) && secondstart > firststart;
     }
 
@@ -71,17 +70,17 @@ public class Analysis {
             if (note.getNote().getMidi() < lowerNote.getNote().getMidi()) lowerNote = note;
         }
         mD.add(upperNote.getNote().fullName());
-        log.info("Верхняя:"+mD.get(0));
+        log.info("Верхняя:" + mD.get(0));
         mD.add(lowerNote.getNote().fullName());
-        log.info("Нижняя:"+mD.get(1));
+        log.info("Нижняя:" + mD.get(1));
         mD.add("" + (upperNote.getNote().getMidi() - lowerNote.getNote().getMidi()));
-        log.info("диапазон:"+mD.get(2));
+        log.info("диапазон:" + mD.get(2));
         return mD;
     }
 
-    HashMap<Integer, Integer> numOfNotesByDuration(List<Note> listNote, MidiFile midiFile) {
+    public Map<Integer, Integer> numOfNotesByDuration(List<Note> listNote, MidiFile midiFile) {
         log.info("Количество нот по длительности");
-        HashMap<Integer, Integer> nONBD = new HashMap<>();
+        Map<Integer, Integer> nONBD = new HashMap<>();
         for (Note note : listNote) {
             float bpm = SongUtils.getTempo(midiFile).getBpm();
             int ms = SongUtils.tickToMs(2, midiFile.getResolution(), note.durationTicks());
@@ -92,41 +91,45 @@ public class Analysis {
         return nONBD;
     }
 
-    HashMap<String, Integer> numOcurOfNotes(List<Note> listNote) {
+    public Map<String, Integer> numOcurOfNotes(List<Note> listNote) {
         log.info("Список нот с количеством вхождений");
-        HashMap<String, Integer> nONBD = new HashMap<>();
-        for (Note note : listNote) {
+        Map<String, Integer> nONBD = new HashMap<>();
+        listNote.forEach(note -> {
             String noteName = note.getNote().fullName();
             if (nONBD.containsKey(noteName)) {
                 nONBD.put(noteName, nONBD.get(noteName) + 1);
             } else nONBD.put(noteName, 1);
-        }
+        });
         return nONBD;
     }
-     List<Note> getVoiceTrack(MidiFile midiFile) {
-         log.trace("Выявление голосовой дорожки");
+
+    private List<Note> getVoiceTrack(MidiFile midiFile) {
+        log.trace("Выявление голосовой дорожки");
         List<List<Note>> maybe = getVoiceTracksAsNotes(midiFile);
         long countOfTextEvents = getCountOfTextEvents(midiFile);
         List<Long> difference = maybe.stream().map((notes) -> {
-            return Math.abs((long)notes.size() - countOfTextEvents);
+            return Math.abs((long) notes.size() - countOfTextEvents);
         }).collect(Collectors.toList());
         long minDif = Collections.min(difference);
         return maybe.get(difference.indexOf(minDif));
-     }
-     void getAnalyzeOfVoiceTrack(String midiFilePath) throws IOException {
-         log.info("Анализ голосовой дорожки:");
-        MidiFile midiFile =getMidiFile(midiFilePath);
-         List<Note> noteList=getVoiceTrack(midiFile);
+    }
+
+    public void getAnalyzeOfVoiceTrack(String midiFilePath) throws IOException {
+        log.info("Анализ голосовой дорожки:");
+        MidiFile midiFile = getMidiFile(midiFilePath);
+        List<Note> noteList = getVoiceTrack(midiFile);
 
         midiRange(getVoiceTrack(midiFile));
-        for (Map.Entry entry:numOfNotesByDuration(noteList,midiFile).entrySet()){
-            log.info(entry.getKey() +"мс: "+ entry.getValue());
-        };
-        for(Map.Entry entry:numOcurOfNotes(noteList).entrySet()){
-            log.info(entry.getKey() +": "+ entry.getValue());
+        for (Map.Entry entry : numOfNotesByDuration(noteList, midiFile).entrySet()) {
+            log.info(entry.getKey() + "мс: " + entry.getValue());
         }
-     }
-    long getCountOfTextEvents(MidiFile midiFile) {
+        ;
+        for (Map.Entry entry : numOcurOfNotes(noteList).entrySet()) {
+            log.info(entry.getKey() + ": " + entry.getValue());
+        }
+    }
+
+    private long getCountOfTextEvents(MidiFile midiFile) {
         return midiFile.getTracks().stream().flatMap((midiTrack) -> {
             return midiTrack.getEvents().stream();
         }).filter((midiEvent) -> {
